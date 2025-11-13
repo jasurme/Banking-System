@@ -39,7 +39,33 @@ class SavingsAccount(Account):
         pass
 
     def monthly_interest_calculation(self):
-        
+        pass  
+
+
+
+class CheckingAccount(Account):
+    def __init__(self, account_number, balance, account_holder, overdraft_limit: float, monthly_fee: float, free_transactions: float): # is free float?
+        super().__init__(account_number, balance, account_holder)
+        self.overdraft_limit = overdraft_limit
+        self.monthly_fee = monthly_fee
+        self.free_transactions = free_transactions
+
+    def calculate_interest(self):
+        pass
+
+    def apply_fees(self):
+        pass
+
+    def allow_overdraft_to_limit(self):
+        pass
+
+class LoanAccount(Account):
+    def __init__(self, account_number, balance, account_holder, loan_amount, interest_rate, monthly_payment, remaining_balance):
+        super().__init__(account_number, balance, account_holder)
+        self.loan_amount = loan_amount
+        self.interest_rate = interest_rate
+        self.monthly_payment = monthly_payment
+        self.remaining_balance = remaining_balance
 
 class Account:
     pass
@@ -59,8 +85,4 @@ class Account:
 class Account:
     pass
 
-class Account:
-    pass
 
-class Account:
-    pass
