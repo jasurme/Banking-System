@@ -106,7 +106,7 @@ class Customer:
             pass
 
 
-class IndividualAccount(Customer):
+class IndividualCustomer(Customer):
     def __init__(self, customer_id: str, name: str, email: str, phone: int, address: str, accounts_list: list, date_of_birth, SSN, employment_status):
         super().__init__(customer_id, name, email, phone, address, accounts_list)
         self.date_of_birth = date_of_birth
@@ -119,7 +119,7 @@ class IndividualAccount(Customer):
     def personal_lone_eligibility(self):
         pass
 
-class CorporateAccount(Customer):
+class CorporateCustomer(Customer):
     def __init__(self, customer_id: str, name: str, email: str, phone: int, address: str, accounts_list: list, company_name, tax_id, business_type, num_of_employees):
         super().__init__(customer_id, name, email, phone, address, accounts_list)
         self.company_name = company_name
@@ -180,4 +180,6 @@ class Transfer(Transaction):
     def execute(self):
         pass
     """Moves money between accounts"""
+
+    will write meethods
 
