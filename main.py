@@ -232,33 +232,69 @@ class Transaction:
         self.transaction_type = transaction_type
         self.from_account = from_account
         self.to_account = to_account
+        self.executed = False
 
-    def execute(self):
-        pass
-
-    def reverse(self):
-        pass
 
     def validate(self):
-        pass
+    if self.amount <= 0:
+        raise ValueError("Transaction amount must be greater than zero")
+
+    def execute(self):
+        raise NotImplementedError("Execute must be implemented by subclasses")
+
+
+    def reverse(self):
+        raise NotImplementedError("Reverse must be implemented by subclasses")
 
 class Deposit(Transaction):
     def __init__(self, transaction_id, timestamp, amount, transaction_type, from_account, to_account, deposit_method):
         super().__init__(transaction_id, timestamp, amount, transaction_type, from_account, to_account)
         self.deposit_method = deposit_method
 
+    def validate(self):
+        super().validate()
+        if self.to_account is None:
+            raise ValueError("Deposit requires a target account")
+
     def execute(self):
-        pass
-    """adds to balance """
+        self.validate()
+        self.to_account.deposit(self.amount)
+        self.executed = True
+
+    def reverse(self):
+        if not self.executed:
+            raise ValueError("Cannot reverse a transaction that was never executed")
+
+        if self.amount > self.to_account.balance:
+            raise ValueError("Cannot reverse deposit: insufficient funds in account")
+
+        self.to_account.withdraw(self.amount)
+        self.executed = False
 
 class Withdraw(Transaction):
     def __init__(self, transaction_id, timestamp, amount, transaction_type, from_account, to_account, withdrawal_method):
         super().__init__(transaction_id, timestamp, amount, transaction_type, from_account, to_account)
         self.deposit_method = withdrawal_method
 
+    def validate(self):
+        super().validate()
+        if self.from_account is None:
+            raise ValueError("Withdrawal requires a source account")
+
+        if self.amount > self.from_account.balance:
+            raise ValueError("Insufficient funds")
+
     def execute(self):
-        pass
-    """ deducts from balance with validation"""
+        self.validate()
+        self.from_account.withdraw(self.amount)
+        self.executed = True
+
+    def reverse(self):
+        if not self.executed:
+            raise ValueError("Cannot reverse a non-executed transaction")
+
+        self.from_account.deposit(self.amount)
+        self.executed = False
 
 class Transfer(Transaction):
     def __init__(self, transaction_id, timestamp, amount, transaction_type, from_account, to_account, source_account, destination_account, transfer_fee):
@@ -267,9 +303,49 @@ class Transfer(Transaction):
         self.destination_account = destination_account
         self.transfer_fee = transfer_fee
 
-    def execute(self):
-        pass
-    """Moves money between accounts"""
+    class Transfer(Transaction):
+        def __init__(self, transaction_id, timestamp, amount, transaction_type, from_account, to_account,
+                     source_account, destination_account, transfer_fee):
+            super().__init__(transaction_id, timestamp, amount, transaction_type, from_account, to_account)
+            self.source_account = source_account
+            self.destination_account = destination_account
+            self.transfer_fee = transfer_fee
 
-    will write meethods
+        def validate(self):
+            super().validate()
+
+            if self.source_account is None or self.destination_account is None:
+                raise ValueError("Transfer requires both source and destination accounts")
+
+            total_cost = self.amount + self.transfer_fee
+            if total_cost > self.source_account.balance:
+                raise ValueError("Insufficient balance including transfer fee")
+
+        def execute(self):
+            self.validate()
+            total_cost = self.amount + self.transfer_fee
+
+            # deduct from source
+            self.source_account.withdraw(total_cost)
+
+            # add to destination
+            self.destination_account.deposit(self.amount)
+
+            self.executed = True
+
+        def reverse(self):
+            if not self.executed:
+                raise ValueError("Cannot reverse an unexecuted transaction")
+
+            # remove the transferred amount from the destination account
+            if self.amount > self.destination_account.balance:
+                raise ValueError("Destination account lacks funds to reverse")
+
+            self.destination_account.withdraw(self.amount)
+
+            # restore original amount + fee to the source account
+            refund = self.amount + self.transfer_fee
+            self.source_account.deposit(refund)
+
+            self.executed = False
 
