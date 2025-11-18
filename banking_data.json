@@ -1,0 +1,28 @@
+{
+  "customers": [
+    {
+      "customer_id": "CUST0002",
+      "customer_type": "CorporateCustomer",
+      "name": "Ibrohimjon",
+      "email": "ww@gmail.com",
+      "phone": "3245245345",
+      "address": "23243fdfcd",
+      "date_joined": "2025-11-18",
+      "company_name": "habsida",
+      "tax_id": "567890-"
+    }
+  ],
+  "accounts": [
+    {
+      "account_number": "ACC001001",
+      "account_type": "CheckingAccount",
+      "balance": 2000.0,
+      "holder_id": "CUST0002",
+      "date_opened": "2025-11-18 14:06:57",
+      "status": "active"
+    }
+  ],
+  "next_customer_id": 3,
+  "next_account_number": 1002,
+  "next_transaction_id": 2
+}
