@@ -269,124 +269,404 @@ class CheckingAccount(Account):
 
 
 class LoanAccount(Account):
-    def __init__(self, account_number, balance, account_holder, loan_amount, interest_rate, monthly_payment, remaining_balance):
-        super().__init__(account_number, balance, account_holder)
-        self.loan_amount = loan_amount
-        self.interest_rate = interest_rate
-        self.monthly_payment = monthly_payment
-        self.remaining_balance = remaining_balance
-
-class Account:
-    pass
-
-class Account:
-    pass
-
-class Account:
-    pass
-
-class Account:
-    pass
-
-class Account:
-    pass
-
-class Account:
-    pass
-
-#### Ibrohimjon's Code
-
-class Customer:
-    def __init__(self, customer_id: str, name: str, email: str, phone: int, address: str, accounts_list: list):
-        self.customer_id = customer_id
-        self.name = name
-        self.email = email
-        self.phone = phone
-        self.address = address
-        self.accounts_list = accounts_list
-
-        def add_account(self):
-            pass
-
-        def remove_account(self):
-            pass
-
-        def get_total_balance(self):
-            pass
-
-
-class IndividualAccount(Customer):
-    def __init__(self, customer_id: str, name: str, email: str, phone: int, address: str, accounts_list: list, date_of_birth, SSN, employment_status):
-        super().__init__(customer_id, name, email, phone, address, accounts_list)
-        self.date_of_birth = date_of_birth
-        self.SSN = SSN
-        self.employment_status = employment_status
-
-    def credit_score_calculation(self):
-        pass
-
-    def personal_lone_eligibility(self):
-        pass
-
-class CorporateAccount(Customer):
-    def __init__(self, customer_id: str, name: str, email: str, phone: int, address: str, accounts_list: list, company_name, tax_id, business_type, num_of_employees):
-        super().__init__(customer_id, name, email, phone, address, accounts_list)
-        self.company_name = company_name
-        self.tax_id = tax_id
-        self.business_type = business_type
-        self.num_of_employees = num_of_employees
-
-    def business_loan_eligibility(self):
-        pass
-
-    def bulk_transactions(self):
-        pass
+    def __init__(self, account_number: str, account_holder, loan_amount: float, interest_rate: float = 0.08, loan_term_months: int = 24):
+        super().__init__(account_number, account_holder, -loan_amount)
+        self.__loan_amount = loan_amount
+        self.__interest_rate = interest_rate
+        self.__loan_term_months = loan_term_months
+        self.__remaining_balance = loan_amount
+        self.__monthly_payment = self._calculate_monthly_payment()
+        self.__payments_made = 0
+    
+    def _calculate_monthly_payment(self):
+        if self.__interest_rate == 0:
+            return self.__loan_amount / self.__loan_term_months
+        monthly_rate = self.__interest_rate / 12
+        payment = self.__loan_amount * (monthly_rate * (1 + monthly_rate)**self.__loan_term_months) / ((1 + monthly_rate)**self.__loan_term_months - 1)
+        return round(payment, 2)
+    
+    def get_monthly_payment(self):
+        return self.__monthly_payment
+    
+    def get_remaining_balance(self):
+        return self.__remaining_balance
+    
+    def calculate_interest(self):
+        return round(self.__remaining_balance * (self.__interest_rate / 12), 2)
+    
+    def deposit(self, amount):
+        if amount < self.__monthly_payment:
+            raise ValueError(f"Minimum payment: ${self.__monthly_payment:.2f}")
+        
+        interest_portion = self.calculate_interest()
+        principal_portion = amount - interest_portion
+        
+        self.__remaining_balance -= principal_portion
+        self._set_balance(self.get_balance() + principal_portion)
+        self.__payments_made += 1
+        
+        self._add_transaction({"type": "payment", "amount": amount, "principal": principal_portion, "interest": interest_portion, "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+        print(f"✓ Payment: ${amount:.2f} (Principal: ${principal_portion:.2f}, Interest: ${interest_portion:.2f})")
+        print(f"  Remaining: ${self.__remaining_balance:.2f}")
+        return True
+    
+    def withdraw(self, amount):
+        raise Exception("Cannot withdraw from loan account")
 
 
-class Transaction:
-    def __init__(self, transaction_id, timestamp, amount, transaction_type, from_account, to_account):
-        self.transaction_id = transaction_id
-        self.timestamp = timestamp
-        self.amount = amount
-        self.transaction_type = transaction_type
-        self.from_account = from_account
-        self.to_account = to_account
-
+class Transaction(ABC):
+    def __init__(self, transaction_id: str, amount: float):
+        self.__transaction_id = transaction_id
+        self.__amount = amount
+        self.__timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.__status = "pending"
+    
+    def get_transaction_id(self):
+        return self.__transaction_id
+    
+    def get_amount(self):
+        return self.__amount
+    
+    def get_status(self):
+        return self.__status
+    
+    def _set_status(self, status):
+        self.__status = status
+    
+    @abstractmethod
     def execute(self):
         pass
-
-    def reverse(self):
-        pass
-
+    
+    @abstractmethod
     def validate(self):
         pass
+    
+    def __lt__(self, other):
+        return isinstance(other, Transaction) and self.__amount < other.__amount
+    
+    def __str__(self):
+        return f"{self.__class__.__name__} #{self.__transaction_id}: ${self.__amount:.2f}"
 
-class Deposit(Transaction):
-    def __init__(self, transaction_id, timestamp, amount, transaction_type, from_account, to_account, deposit_method):
-        super().__init__(transaction_id, timestamp, amount, transaction_type, from_account, to_account)
-        self.deposit_method = deposit_method
 
+class DepositTransaction(Transaction):
+    def __init__(self, transaction_id: str, account, amount: float, method: str = "cash"):
+        super().__init__(transaction_id, amount)
+        self.__account = account
+        self.__method = method
+    
+    def validate(self):
+        if self.__account.get_status() != "active":
+            return False, f"Account is {self.__account.get_status()}"
+        if self.get_amount() <= 0:
+            return False, "Amount must be positive"
+        return True, "Valid"
+    
     def execute(self):
-        pass
-    """adds to balance """
+        is_valid, msg = self.validate()
+        if not is_valid:
+            self._set_status("failed")
+            raise Exception(f"Failed: {msg}")
+        
+        self.__account.deposit(self.get_amount())
+        self._set_status("completed")
+        return True
 
-class Withdraw(Transaction):
-    def __init__(self, transaction_id, timestamp, amount, transaction_type, from_account, to_account, withdrawal_method):
-        super().__init__(transaction_id, timestamp, amount, transaction_type, from_account, to_account)
-        self.deposit_method = withdrawal_method
 
+class WithdrawalTransaction(Transaction):
+    def __init__(self, transaction_id: str, account, amount: float, method: str = "ATM"):
+        super().__init__(transaction_id, amount)
+        self.__account = account
+        self.__method = method
+    
+    def validate(self):
+        if self.__account.get_status() != "active":
+            return False, f"Account is {self.__account.get_status()}"
+        if self.get_amount() <= 0:
+            return False, "Amount must be positive"
+        
+        if isinstance(self.__account, CheckingAccount):
+            if self.get_amount() > self.__account.get_total_spendable_balance():
+                return False, "Insufficient funds"
+        else:
+            if self.get_amount() > self.__account.get_balance():
+                return False, "Insufficient funds"
+        
+        return True, "Valid"
+    
     def execute(self):
-        pass
-    """ deducts from balance with validation"""
+        is_valid, msg = self.validate()
+        if not is_valid:
+            self._set_status("failed")
+            raise Exception(f"Failed: {msg}")
+        
+        self.__account.withdraw(self.get_amount())
+        self._set_status("completed")
+        return True
 
-class Transfer(Transaction):
-    def __init__(self, transaction_id, timestamp, amount, transaction_type, from_account, to_account, source_account, destination_account, transfer_fee):
-        super().__init__(transaction_id, timestamp, amount, transaction_type, from_account, to_account)
-        self.source_account = source_account
-        self.destination_account = destination_account
-        self.transfer_fee = transfer_fee
 
+class TransferTransaction(Transaction):
+    def __init__(self, transaction_id: str, source_account, dest_account, amount: float):
+        super().__init__(transaction_id, amount)
+        self.__source = source_account
+        self.__dest = dest_account
+    
+    def validate(self):
+        if self.__source.get_status() != "active":
+            return False, "Source account not active"
+        if self.__dest.get_status() != "active":
+            return False, "Destination account not active"
+        if self.get_amount() <= 0:
+            return False, "Amount must be positive"
+        
+        if isinstance(self.__source, CheckingAccount):
+            if self.get_amount() > self.__source.get_total_spendable_balance():
+                return False, "Insufficient funds"
+        else:
+            if self.get_amount() > self.__source.get_balance():
+                return False, "Insufficient funds"
+        
+        return True, "Valid"
+    
     def execute(self):
-        pass
-    """Moves money between accounts"""
+        is_valid, msg = self.validate()
+        if not is_valid:
+            self._set_status("failed")
+            raise Exception(f"Failed: {msg}")
+        
+        self.__source.withdraw(self.get_amount())
+        self.__dest.deposit(self.get_amount())
+        self._set_status("completed")
+        print(f"✓ Transfer: ${self.get_amount():.2f} from {self.__source.get_account_number()} to {self.__dest.get_account_number()}")
+        return True
 
+
+class BankingSystem:
+    def __init__(self):
+        self.__customers = {}
+        self.__accounts = {}
+        self.__transactions = []
+        self.__next_customer_id = 1
+        self.__next_account_number = 1000
+        self.__next_transaction_id = 1
+        self.__data_file = "banking_data.json"
+    
+    def generate_customer_id(self):
+        cust_id = f"CUST{self.__next_customer_id:04d}"
+        self.__next_customer_id += 1
+        return cust_id
+    
+    def generate_account_number(self):
+        acc_num = f"ACC{self.__next_account_number:06d}"
+        self.__next_account_number += 1
+        return acc_num
+    
+    def generate_transaction_id(self):
+        txn_id = f"TXN{self.__next_transaction_id:08d}"
+        self.__next_transaction_id += 1
+        return txn_id
+    
+    def add_customer(self, customer):
+        self.__customers[customer.get_customer_id()] = customer
+    
+    def add_account(self, account):
+        self.__accounts[account.get_account_number()] = account
+    
+    def add_transaction(self, transaction):
+        self.__transactions.append(transaction)
+    
+    def find_customer(self, customer_id):
+        return self.__customers.get(customer_id)
+    
+    def find_account(self, account_number):
+        return self.__accounts.get(account_number)
+    
+    def get_all_customers(self):
+        return list(self.__customers.values())
+    
+    def get_all_accounts(self):
+        return list(self.__accounts.values())
+    
+    def create_account(self, customer, account_type):
+        acc_num = self.generate_account_number()
+        
+        if account_type == "savings":
+            balance = float(input("Initial balance: "))
+            account = SavingsAccount(acc_num, customer, balance)
+        elif account_type == "checking":
+            balance = float(input("Initial balance: "))
+            account = CheckingAccount(acc_num, customer, balance)
+        elif account_type == "loan":
+            amount = float(input("Loan amount: "))
+            account = LoanAccount(acc_num, customer, amount)
+        else:
+            raise ValueError("Invalid type")
+        
+        self.add_account(account)
+        customer.add_account(account)
+        print(f"✓ {account_type.capitalize()} account created: {acc_num}")
+        return account
+    
+    def save_data(self):
+        try:
+            data = {
+                "customers": [c.to_dict() for c in self.__customers.values()],
+                "accounts": [a.to_dict() for a in self.__accounts.values()],
+                "next_customer_id": self.__next_customer_id,
+                "next_account_number": self.__next_account_number,
+                "next_transaction_id": self.__next_transaction_id
+            }
+            with open(self.__data_file, 'w') as f:
+                json.dump(data, f, indent=2)
+            print(f"✓ Data saved")
+            return True
+        except Exception as e:
+            print(f"✗ Save failed: {e}")
+            return False
+    
+    def load_data(self):
+        if not os.path.exists(self.__data_file):
+            print("Starting fresh")
+            return False
+        try:
+            with open(self.__data_file, 'r') as f:
+                data = json.load(f)
+            self.__next_customer_id = data.get("next_customer_id", 1)
+            self.__next_account_number = data.get("next_account_number", 1000)
+            self.__next_transaction_id = data.get("next_transaction_id", 1)
+            print(f"✓ Data loaded")
+            return True
+        except Exception as e:
+            print(f"✗ Load failed: {e}")
+            return False
+
+
+def main():
+    bank = BankingSystem()
+    bank.load_data()
+    
+    while True:
+        print("\n" + "="*60)
+        print("BANKING SYSTEM")
+        print("="*60)
+        print("[1] Create Customer  [2] Create Account  [3] Deposit  [4] Withdraw  [5] Transfer  [6] View Customer  [7] View Account  [8] List All  [9] Exit")
+        
+        try:
+            choice = input("Select: ").strip()
+            
+            if choice == "1":
+                print("\n[1] Individual  [2] Corporate")
+                ctype = input("Type: ").strip()
+                name = input("Name: ")
+                email = input("Email: ")
+                phone = input("Phone: ")
+                address = input("Address: ")
+                cust_id = bank.generate_customer_id()
+                
+                if ctype == "1":
+                    dob = input("Date of birth (YYYY-MM-DD): ")
+                    customer = IndividualCustomer(cust_id, name, email, phone, address, dob)
+                else:
+                    company = input("Company name: ")
+                    tax_id = input("Tax ID: ")
+                    customer = CorporateCustomer(cust_id, name, email, phone, address, company, tax_id)
+                
+                bank.add_customer(customer)
+                print(f"✓ Customer created: {cust_id}")
+            
+            elif choice == "2":
+                cust_id = input("Customer ID: ")
+                customer = bank.find_customer(cust_id)
+                if not customer:
+                    print("✗ Customer not found")
+                    continue
+                
+                print("[1] Savings  [2] Checking  [3] Loan")
+                atype = input("Type: ").strip()
+                
+                if atype == "1":
+                    bank.create_account(customer, "savings")
+                elif atype == "2":
+                    bank.create_account(customer, "checking")
+                elif atype == "3":
+                    bank.create_account(customer, "loan")
+            
+            elif choice == "3":
+                acc_num = input("Account number: ")
+                account = bank.find_account(acc_num)
+                if not account:
+                    print("✗ Account not found")
+                    continue
+                
+                amount = float(input("Amount: "))
+                txn_id = bank.generate_transaction_id()
+                txn = DepositTransaction(txn_id, account, amount)
+                txn.execute()
+                bank.add_transaction(txn)
+            
+            elif choice == "4":
+                acc_num = input("Account number: ")
+                account = bank.find_account(acc_num)
+                if not account:
+                    print("✗ Account not found")
+                    continue
+                
+                amount = float(input("Amount: "))
+                txn_id = bank.generate_transaction_id()
+                txn = WithdrawalTransaction(txn_id, account, amount)
+                txn.execute()
+                bank.add_transaction(txn)
+            
+            elif choice == "5":
+                from_acc = input("From account: ")
+                to_acc = input("To account: ")
+                source = bank.find_account(from_acc)
+                dest = bank.find_account(to_acc)
+                
+                if not source or not dest:
+                    print("✗ Account(s) not found")
+                    continue
+                
+                amount = float(input("Amount: "))
+                txn_id = bank.generate_transaction_id()
+                txn = TransferTransaction(txn_id, source, dest, amount)
+                txn.execute()
+                bank.add_transaction(txn)
+            
+            elif choice == "6":
+                cust_id = input("Customer ID: ")
+                customer = bank.find_customer(cust_id)
+                if customer:
+                    customer.get_info()
+                else:
+                    print("✗ Not found")
+            
+            elif choice == "7":
+                acc_num = input("Account number: ")
+                account = bank.find_account(acc_num)
+                if account:
+                    account.view_balance()
+                else:
+                    print("✗ Not found")
+            
+            elif choice == "8":
+                print("\n=== All Customers ===")
+                for c in bank.get_all_customers():
+                    print(f"  {c}")
+                print("\n=== All Accounts ===")
+                for a in bank.get_all_accounts():
+                    print(f"  {a}")
+            
+            elif choice == "9":
+                bank.save_data()
+                print("\nGoodbye!")
+                break
+            
+            else:
+                print("Invalid choice")
+        
+        except Exception as e:
+            print(f"✗ Error: {e}")
+
+
+if __name__ == "__main__":
+    main()
