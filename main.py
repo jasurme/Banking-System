@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 import json
 import os
-import traceback
 import random
 import re
 
@@ -713,7 +712,6 @@ class BankingSystem:
             return True
         except Exception as e:
             print(f"load failed: {e}")
-            traceback.print_exc()
             return False
 
 def main():
@@ -843,7 +841,8 @@ def main():
         
         except Exception as e:
             print(f"error: {e}")
-            traceback.print_exc()
+
+
 
 if __name__ == "__main__":
     main()
