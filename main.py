@@ -6,6 +6,7 @@ import traceback
 import random
 import re
 
+
 class Customer:
     def __init__(self, customer_id: str, name: str, email: str, phone: str, address: str, date_joined: str = None):
         self.__customer_id = customer_id
@@ -16,17 +17,10 @@ class Customer:
         self.__accounts_list = []
         self.__date_joined = date_joined if date_joined else datetime.now().strftime("%Y-%m-%d")
     
-    def get_customer_id(self):
-        return self.__customer_id
-    
-    def get_name(self):
-        return self.__name
-    
-    def get_email(self):
-        return self.__email
-    
-    def get_accounts_list(self):
-        return self.__accounts_list
+    def get_customer_id(self): return self.__customer_id
+    def get_name(self): return self.__name
+    def get_email(self): return self.__email
+    def get_accounts_list(self): return self.__accounts_list
     
     def add_account(self, account):
         if account not in self.__accounts_list:
@@ -40,24 +34,24 @@ class Customer:
         return sum(acc.get_balance() for acc in self.__accounts_list)
     
     def get_info(self):
-        print(f"\n[1] ID  [2] Name  [3] Email  [4] Phone  [5] Accounts  [6] Total Balance  [7] All")
-        choice = input("Select: ").strip()
+        print(f"\n[1] id  [2] name  [3] email  [4] phone  [5] accounts  [6] total balance  [7] all")
+        choice = input("select: ")
         
         if choice == "1":
-            print(f"ID: {self.__customer_id}")
+            print(f"id: {self.__customer_id}")
         elif choice == "2":
-            print(f"Name: {self.__name}")
+            print(f"name: {self.__name}")
         elif choice == "3":
-            print(f"Email: {self.__email}")
+            print(f"email: {self.__email}")
         elif choice == "4":
-            print(f"Phone: {self.__phone}")
+            print(f"phone: {self.__phone}")
         elif choice == "5":
             for acc in self.__accounts_list:
                 print(f"  {acc.get_account_number()}: ${acc.get_balance():.2f}")
         elif choice == "6":
-            print(f"Total: ${self.get_total_balance():.2f}")
+            print(f"total: ${self.get_total_balance():.2f}")
         elif choice == "7":
-            print(f"ID: {self.__customer_id} | Name: {self.__name} | Email: {self.__email} | Phone: {self.__phone} | Balance: ${self.get_total_balance():.2f}")
+            print(f"id: {self.__customer_id} | name: {self.__name} | email: {self.__email} | phone: {self.__phone} | balance: ${self.get_total_balance():.2f}")
     
     def __eq__(self, other):
         return isinstance(other, Customer) and self.__customer_id == other.__customer_id
@@ -87,15 +81,13 @@ class Customer:
             data.get("date_joined")
         )
 
-
 class IndividualCustomer(Customer):
     def __init__(self, customer_id: str, name: str, email: str, phone: str, address: str, date_of_birth: str = "1990-01-01", date_joined: str = None):
         super().__init__(customer_id, name, email, phone, address, date_joined)
         self.__date_of_birth = date_of_birth
         self.__credit_score = 700
     
-    def get_credit_score(self):
-        return self.__credit_score
+    def get_credit_score(self): return self.__credit_score
     
     def update_credit_score(self, score):
         if 300 <= score <= 850:
@@ -120,15 +112,13 @@ class IndividualCustomer(Customer):
         customer.__credit_score = data.get("credit_score", 700)
         return customer
 
-
 class CorporateCustomer(Customer):
     def __init__(self, customer_id: str, name: str, email: str, phone: str, address: str, company_name: str, tax_id: str, date_joined: str = None):
         super().__init__(customer_id, name, email, phone, address, date_joined)
         self.__company_name = company_name
         self.__tax_id = tax_id
     
-    def get_company_name(self):
-        return self.__company_name
+    def get_company_name(self): return self.__company_name
     
     def to_dict(self):
         data = super().to_dict()
@@ -148,7 +138,6 @@ class CorporateCustomer(Customer):
             data.get("date_joined")
         )
 
-
 class Account(ABC):
     def __init__(self, account_number: str, account_holder, initial_balance: float = 0.0):
         self.__account_number = account_number
@@ -158,23 +147,16 @@ class Account(ABC):
         self.__transaction_history = []
         self.__status = "active"
     
-    def get_account_number(self):
-        return self.__account_number
+    def get_account_number(self): return self.__account_number
+    def get_balance(self): return self.__balance
+    def get_account_holder(self): return self.__account_holder
+    def get_status(self): return self.__status
     
-    def get_balance(self):
-        return self.__balance
-    
-    def get_account_holder(self):
-        return self.__account_holder
-    
-    def get_status(self):
-        return self.__status
-    
-    def _set_balance(self, amount):
-        self.__balance = amount
-    
-    def _add_transaction(self, transaction_dict):
-        self.__transaction_history.append(transaction_dict)
+    def _set_balance(self, amount): self.__balance = amount
+    def _add_transaction(self, transaction_dict): self.__transaction_history.append(transaction_dict)
+    def _set_transaction_history(self, history): self.__transaction_history = history
+    def _set_date_opened(self, date_str): self.__date_opened = date_str
+    def _set_status(self, status): self.__status = status
     
     @abstractmethod
     def calculate_interest(self):
@@ -182,9 +164,9 @@ class Account(ABC):
     
     def deposit(self, amount):
         if self.__status != "active":
-            raise Exception(f"Account is {self.__status}")
+            raise Exception(f"account is {self.__status}")
         if amount <= 0:
-            raise ValueError("Amount must be positive")
+            raise ValueError("amount must be positive")
         
         self.__balance += amount
         self.__transaction_history.append({
@@ -193,16 +175,16 @@ class Account(ABC):
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "balance_after": self.__balance
         })
-        print(f"Deposited ${amount:.2f}. Balance: ${self.__balance:.2f}")
+        print(f"deposited ${amount:.2f}. balance: ${self.__balance:.2f}")
         return True
     
     def withdraw(self, amount):
         if self.__status != "active":
-            raise Exception(f"Account is {self.__status}")
+            raise Exception(f"account is {self.__status}")
         if amount <= 0:
-            raise ValueError("Amount must be positive")
+            raise ValueError("amount must be positive")
         if amount > self.__balance:
-            raise ValueError("Insufficient funds")
+            raise ValueError("insufficient funds")
         
         self.__balance -= amount
         self.__transaction_history.append({
@@ -211,11 +193,11 @@ class Account(ABC):
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "balance_after": self.__balance
         })
-        print(f"Withdrew ${amount:.2f}. Balance: ${self.__balance:.2f}")
+        print(f"withdrew ${amount:.2f}. balance: ${self.__balance:.2f}")
         return True
     
     def view_balance(self):
-        print(f"Account: {self.__account_number} | Holder: {self.__account_holder.get_name()} | Balance: ${self.__balance:.2f}")
+        print(f"account: {self.__account_number} | holder: {self.__account_holder.get_name()} | balance: ${self.__balance:.2f}")
     
     def __str__(self):
         return f"{self.__class__.__name__} #{self.__account_number}: ${self.__balance:.2f}"
@@ -233,15 +215,9 @@ class Account(ABC):
             "balance": self.__balance,
             "holder_id": self.__account_holder.get_customer_id(),
             "date_opened": self.__date_opened,
-            "status": self.__status
+            "status": self.__status,
+            "transaction_history": self.__transaction_history
         }
-    
-    def _set_date_opened(self, date_str):
-        self.__date_opened = date_str
-    
-    def _set_status(self, status):
-        self.__status = status
-
 
 class SavingsAccount(Account):
     def __init__(self, account_number: str, account_holder, initial_balance: float = 0.0):
@@ -255,27 +231,15 @@ class SavingsAccount(Account):
         balance = self.get_balance()
         return balance * self.__interest_rate if balance > 0 else 0.0
     
-    def credit_interest(self):
-        monthly_interest = self.calculate_interest() / 12
-        if monthly_interest > 0:
-            self._set_balance(self.get_balance() + monthly_interest)
-            self._add_transaction({"type": "interest", "amount": monthly_interest, "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
-            print(f"Interest: ${monthly_interest:.2f}")
-            return monthly_interest
-        return 0.0
-    
     def withdraw(self, amount):
         if self.__current_withdrawal_count >= self.__withdrawal_limit:
-            raise Exception(f"Withdrawal limit ({self.__withdrawal_limit}) reached")
+            raise Exception(f"withdrawal limit ({self.__withdrawal_limit}) reached")
         if self.get_balance() - amount < self.__minimum_balance:
-            raise ValueError(f"Minimum balance ${self.__minimum_balance} required")
+            raise ValueError(f"minimum balance ${self.__minimum_balance} required")
         
         super().withdraw(amount)
         self.__current_withdrawal_count += 1
         return True
-    
-    def reset_withdrawal_count(self):
-        self.__current_withdrawal_count = 0
     
     def to_dict(self):
         data = super().to_dict()
@@ -297,8 +261,8 @@ class SavingsAccount(Account):
         account._set_date_opened(data.get("date_opened", datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         account._set_status(data.get("status", "active"))
         account._set_withdrawal_count(data.get("current_withdrawal_count", 0))
+        account._set_transaction_history(data.get("transaction_history", []))
         return account
-
 
 class CheckingAccount(Account):
     def __init__(self, account_number: str, account_holder, initial_balance: float = 0.0, overdraft_limit: float = 500.0):
@@ -315,13 +279,13 @@ class CheckingAccount(Account):
     
     def withdraw(self, amount):
         if self.get_status() != "active":
-            raise Exception(f"Account is {self.get_status()}")
+            raise Exception(f"account is {self.get_status()}")
         if amount <= 0:
-            raise ValueError("Amount must be positive")
+            raise ValueError("amount must be positive.")
         
         balance_after = self.get_balance() - amount
         if balance_after < -self.__overdraft_limit:
-            raise ValueError(f"Insufficient funds. Available: ${self.get_total_spendable_balance():.2f}")
+            raise ValueError(f"insufficient funds. available: ${self.get_total_spendable_balance():.2f}")
         
         current_balance = self.get_balance()
         self._set_balance(balance_after)
@@ -329,10 +293,16 @@ class CheckingAccount(Account):
         if current_balance >= 0 and balance_after < 0:
             overdraft_fee = 35.0
             self._set_balance(self.get_balance() - overdraft_fee)
-            print(f"⚠ Overdraft fee: ${overdraft_fee:.2f}")
+            self._add_transaction({
+                "type": "fee", 
+                "amount": overdraft_fee, 
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "description": "overdraft fee"
+            })
+            print(f"overdraft fee: ${overdraft_fee:.2f}")
         
         self._add_transaction({"type": "withdrawal", "amount": amount, "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
-        print(f"Withdrew ${amount:.2f}. Balance: ${self.get_balance():.2f}")
+        print(f"withdrew ${amount:.2f}. balance: ${self.get_balance():.2f}")
         return True
     
     def to_dict(self):
@@ -349,8 +319,8 @@ class CheckingAccount(Account):
         account._set_balance(data["balance"])
         account._set_date_opened(data.get("date_opened", datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         account._set_status(data.get("status", "active"))
+        account._set_transaction_history(data.get("transaction_history", []))
         return account
-
 
 class LoanAccount(Account):
     def __init__(self, account_number: str, account_holder, loan_amount: float, interest_rate: float = 0.08, loan_term_months: int = 24):
@@ -369,33 +339,35 @@ class LoanAccount(Account):
         payment = self.__loan_amount * (monthly_rate * (1 + monthly_rate)**self.__loan_term_months) / ((1 + monthly_rate)**self.__loan_term_months - 1)
         return round(payment, 2)
     
-    def get_monthly_payment(self):
-        return self.__monthly_payment
-    
-    def get_remaining_balance(self):
-        return self.__remaining_balance
-    
     def calculate_interest(self):
         return round(self.__remaining_balance * (self.__interest_rate / 12), 2)
     
     def deposit(self, amount):
-        if amount < self.__monthly_payment:
-            raise ValueError(f"Minimum payment: ${self.__monthly_payment:.2f}")
+        if amount > self.__remaining_balance:
+            print(f"note: payment ${amount:.2f} exceeds balance. adjusting to ${self.__remaining_balance:.2f}")
+            amount = self.__remaining_balance
+
+        if amount < self.__monthly_payment and amount < self.__remaining_balance:
+            raise ValueError(f"minimum payment: ${self.__monthly_payment:.2f}")
         
         interest_portion = self.calculate_interest()
         principal_portion = amount - interest_portion
         
         self.__remaining_balance -= principal_portion
+        
+        if self.__remaining_balance < 0:
+            self.__remaining_balance = 0.0
+        
         self._set_balance(self.get_balance() + principal_portion)
         self.__payments_made += 1
         
         self._add_transaction({"type": "payment", "amount": amount, "principal": principal_portion, "interest": interest_portion, "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
-        print(f"Payment: ${amount:.2f} (Principal: ${principal_portion:.2f}, Interest: ${interest_portion:.2f})")
-        print(f"  Remaining: ${self.__remaining_balance:.2f}")
+        print(f"payment: ${amount:.2f} (principal: ${principal_portion:.2f}, interest: ${interest_portion:.2f})")
+        print(f"  remaining: ${self.__remaining_balance:.2f}")
         return True
     
     def withdraw(self, amount):
-        raise Exception("Cannot withdraw from loan account")
+        raise Exception("cannot withdraw from loan account")
     
     def to_dict(self):
         data = super().to_dict()
@@ -409,11 +381,8 @@ class LoanAccount(Account):
         })
         return data
     
-    def _set_remaining_balance(self, balance):
-        self.__remaining_balance = balance
-    
-    def _set_payments_made(self, count):
-        self.__payments_made = count
+    def _set_remaining_balance(self, balance): self.__remaining_balance = balance
+    def _set_payments_made(self, count): self.__payments_made = count
     
     @classmethod
     def from_dict(cls, data, account_holder):
@@ -430,8 +399,8 @@ class LoanAccount(Account):
         account._set_status(data.get("status", "active"))
         account._set_remaining_balance(data.get("remaining_balance", loan_amount))
         account._set_payments_made(data.get("payments_made", 0))
+        account._set_transaction_history(data.get("transaction_history", []))
         return account
-
 
 class Transaction(ABC):
     def __init__(self, transaction_id: str, amount: float):
@@ -440,17 +409,10 @@ class Transaction(ABC):
         self.__timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.__status = "pending"
     
-    def get_transaction_id(self):
-        return self.__transaction_id
-    
-    def get_amount(self):
-        return self.__amount
-    
-    def get_status(self):
-        return self.__status
-    
-    def _set_status(self, status):
-        self.__status = status
+    def get_transaction_id(self): return self.__transaction_id
+    def get_amount(self): return self.__amount
+    def get_status(self): return self.__status
+    def _set_status(self, status): self.__status = status
     
     @abstractmethod
     def execute(self):
@@ -466,7 +428,6 @@ class Transaction(ABC):
     def __str__(self):
         return f"{self.__class__.__name__} #{self.__transaction_id}: ${self.__amount:.2f}"
 
-
 class DepositTransaction(Transaction):
     def __init__(self, transaction_id: str, account, amount: float, method: str = "cash"):
         super().__init__(transaction_id, amount)
@@ -475,53 +436,51 @@ class DepositTransaction(Transaction):
     
     def validate(self):
         if self.__account.get_status() != "active":
-            return False, f"Account is {self.__account.get_status()}"
+            return False, f"account is {self.__account.get_status()}"
         if self.get_amount() <= 0:
-            return False, "Amount must be positive"
-        return True, "Valid"
+            return False, "amount must be positive"
+        return True, "valid"
     
     def execute(self):
         is_valid, msg = self.validate()
         if not is_valid:
             self._set_status("failed")
-            raise Exception(f"Failed: {msg}")
+            raise Exception(f"failed: {msg}")
         
         self.__account.deposit(self.get_amount())
         self._set_status("completed")
         return True
 
-
 class WithdrawalTransaction(Transaction):
-    def __init__(self, transaction_id: str, account, amount: float, method: str = "ATM"):
+    def __init__(self, transaction_id: str, account, amount: float, method: str = "atm"):
         super().__init__(transaction_id, amount)
         self.__account = account
         self.__method = method
     
     def validate(self):
         if self.__account.get_status() != "active":
-            return False, f"Account is {self.__account.get_status()}"
+            return False, f"account is {self.__account.get_status()}"
         if self.get_amount() <= 0:
-            return False, "Amount must be positive"
+            return False, "amount must be positive"
         
         if isinstance(self.__account, CheckingAccount):
             if self.get_amount() > self.__account.get_total_spendable_balance():
-                return False, "Insufficient funds"
+                return False, "insufficient funds"
         else:
             if self.get_amount() > self.__account.get_balance():
-                return False, "Insufficient funds"
+                return False, "insufficient funds"
         
-        return True, "Valid"
+        return True, "valid"
     
     def execute(self):
         is_valid, msg = self.validate()
         if not is_valid:
             self._set_status("failed")
-            raise Exception(f"Failed: {msg}")
+            raise Exception(f"failed: {msg}")
         
         self.__account.withdraw(self.get_amount())
         self._set_status("completed")
         return True
-
 
 class TransferTransaction(Transaction):
     def __init__(self, transaction_id: str, source_account, dest_account, amount: float):
@@ -531,32 +490,112 @@ class TransferTransaction(Transaction):
     
     def validate(self):
         if self.__source.get_status() != "active":
-            return False, "Source account not active"
+            return False, "source account not active"
         if self.__dest.get_status() != "active":
-            return False, "Destination account not active"
+            return False, "destination account not active"
         if self.get_amount() <= 0:
-            return False, "Amount must be positive"
+            return False, "amount must be positive"
         
         if isinstance(self.__source, CheckingAccount):
             if self.get_amount() > self.__source.get_total_spendable_balance():
-                return False, "Insufficient funds"
+                return False, "insufficient funds"
         else:
             if self.get_amount() > self.__source.get_balance():
-                return False, "Insufficient funds"
+                return False, "insufficient funds"
         
-        return True, "Valid"
+        return True, "valid"
     
     def execute(self):
         is_valid, msg = self.validate()
         if not is_valid:
             self._set_status("failed")
-            raise Exception(f"Failed: {msg}")
+            raise Exception(f"failed: {msg}")
         
-        self.__source.withdraw(self.get_amount())
-        self.__dest.deposit(self.get_amount())
+        try:
+            self.__source.withdraw(self.get_amount())
+        except Exception as e:
+            self._set_status("failed")
+            raise e
+
+        try:
+            self.__dest.deposit(self.get_amount())
+        except Exception as e:
+            self.__source.deposit(self.get_amount())
+            self._set_status("failed")
+            raise Exception(f"transfer failed at destination. money refunded. error: {e}")
+
         self._set_status("completed")
-        print(f"Transfer: ${self.get_amount():.2f} from {self.__source.get_account_number()} to {self.__dest.get_account_number()}")
+        print(f"transfer: ${self.get_amount():.2f} from {self.__source.get_account_number()} to {self.__dest.get_account_number()}")
         return True
+
+class Validator:
+    @staticmethod
+    def validate_choice(prompt: str, valid_choices: list, error_msg: str = "invalid choice. try again."):
+        while True:
+            choice = input(prompt)
+            if choice in valid_choices:
+                return choice
+            print(f"error: {error_msg}")
+
+    @staticmethod
+    def validate_email(prompt: str = "email: "):
+        while True:
+            email = input(prompt)
+            if not email:
+                print("error: email cannot be empty. try again.")
+                continue
+            if '@' in email and '.' in email.split('@')[1] and len(email.split('@')[0]) > 0:
+                return email
+            print("error: invalid email format. enter a valid email (e.g., jasur05@gmail.com)")
+
+    @staticmethod
+    def validate_phone(prompt: str = "phone: "):
+        while True:
+            phone = input(prompt)
+            if not phone:
+                print("error: phone number cannot be empty. try again.")
+                continue
+            clean_phone = phone.replace('+', '').replace('-', '').replace(' ', '').replace('(', '').replace(')', '')
+            if clean_phone.isdigit() and len(clean_phone) >= 7:
+                return phone
+            print("error: invalid phone number. enter a valid phone number (at least 7 digits)")
+
+    @staticmethod
+    def validate_date(prompt: str = "date (yyyy-mm-dd): "):
+        while True:
+            date_str = input(prompt)
+
+            if not date_str:
+                print("error: date cannot be empty. try again.")
+                continue
+            try:
+                datetime.strptime(date_str, "%Y-%m-%d")
+                return date_str
+            except ValueError:
+                print("error: invalid date format. use yyyy-mm-dd format (e.g., 2025-05-25)")
+
+    @staticmethod
+    def validate_not_empty(prompt: str, field_name: str = "this field"):
+        while True:
+            value = input(prompt)
+            if value:
+                return value
+            print(f"error: {field_name} cannot be empty. try again.")
+
+    @staticmethod
+    def validate_amount(prompt: str = "amount: "):
+        while True:
+            try:
+                amount_str = input(prompt)
+                if not amount_str:
+                    print("error: amount cannot be empty. try again.")
+                    continue
+                amount = float(amount_str)
+                if amount > 0:
+                    return amount
+                print("error: amount must be greater than 0. try again.")
+            except ValueError:
+                print("error: invalid amount. enter a valid number.")
 
 
 class BankingSystem:
@@ -571,58 +610,43 @@ class BankingSystem:
     
     def generate_customer_id(self, name: str):
         random_num = random.randint(1000, 9999)
-        cust_id = f"C{name.lower()}{random_num}"
+        cust_id = f"c{name.lower()[:3]}{random_num}"
         return cust_id
     
     def generate_account_number(self, customer_name: str):
         random_num = random.randint(1000, 9999)
-        acc_num = f"A{customer_name.lower()}{random_num}"
+        acc_num = f"a{customer_name.lower()[:3]}{random_num}"
         return acc_num
     
     def generate_transaction_id(self):
-        txn_id = f"TXN{self.__next_transaction_id:08d}"
+        txn_id = f"txn{self.__next_transaction_id:08d}"
         self.__next_transaction_id += 1
         return txn_id
     
-    def add_customer(self, customer):
-        self.__customers[customer.get_customer_id()] = customer
-    
-    def add_account(self, account):
-        self.__accounts[account.get_account_number()] = account
-    
-    def add_transaction(self, transaction):
-        self.__transactions.append(transaction)
-    
-    def find_customer(self, customer_id):
-        return self.__customers.get(customer_id)
-    
-    def find_account(self, account_number):
-        return self.__accounts.get(account_number)
-    
-    def get_all_customers(self):
-        return list(self.__customers.values())
-    
-    def get_all_accounts(self):
-        return list(self.__accounts.values())
+    def add_customer(self, customer): self.__customers[customer.get_customer_id()] = customer
+    def add_account(self, account): self.__accounts[account.get_account_number()] = account
+    def add_transaction(self, transaction): self.__transactions.append(transaction)
+    def find_customer(self, customer_id): return self.__customers.get(customer_id)
+    def find_account(self, account_number): return self.__accounts.get(account_number)
     
     def create_account(self, customer, account_type):
         acc_num = self.generate_account_number(customer.get_name())
         
         if account_type == "savings":
-            balance = validate_amount("Initial balance: $")
+            balance = Validator.validate_amount("initial balance: $")
             account = SavingsAccount(acc_num, customer, balance)
         elif account_type == "checking":
-            balance = validate_amount("Initial balance: $")
+            balance = Validator.validate_amount("initial balance: $")
             account = CheckingAccount(acc_num, customer, balance)
         elif account_type == "loan":
-            amount = validate_amount("Loan amount: $")
+            amount = Validator.validate_amount("loan amount: $")
             account = LoanAccount(acc_num, customer, amount)
         else:
-            raise ValueError("Invalid type")
+            raise ValueError("invalid type")
         
         self.add_account(account)
         customer.add_account(account)
-        print(f"{account_type.capitalize()} account created: {acc_num}")
+        print(f"{account_type} account created: {acc_num}")
         return account
     
     def save_data(self, silent=False):
@@ -637,7 +661,7 @@ class BankingSystem:
             with open(self.__data_file, 'w') as f:
                 json.dump(data, f, indent=2)
             if not silent:
-                print(f"Data saved")
+                print(f"data saved")
             return True
         except Exception as e:
             print(f"save failed: {e}")
@@ -645,7 +669,7 @@ class BankingSystem:
     
     def load_data(self):
         if not os.path.exists(self.__data_file):
-            print("Starting fresh")
+            print("starting fresh")
             return False
         try:
             with open(self.__data_file, 'r') as f:
@@ -661,9 +685,7 @@ class BankingSystem:
                 elif cust_data.get("customer_type") == "CorporateCustomer":
                     customer = CorporateCustomer.from_dict(cust_data)
                 else:
-                  
                     customer = Customer.from_dict(cust_data)
-                
                 self.__customers[customer.get_customer_id()] = customer
             
             for acc_data in data.get("accounts", []):
@@ -671,7 +693,7 @@ class BankingSystem:
                 customer = self.__customers.get(holder_id)
                 
                 if not customer:
-                    print(f"warning: Account {acc_data.get('account_number')} has invalid holder_id {holder_id}")
+                    print(f"warning: account {acc_data.get('account_number')} has invalid holder_id {holder_id}")
                     continue
                 
                 account_type = acc_data.get("account_type")
@@ -682,138 +704,65 @@ class BankingSystem:
                 elif account_type == "LoanAccount":
                     account = LoanAccount.from_dict(acc_data, customer)
                 else:
-                    print(f"warning: Unknown account type {account_type}")
+                    print(f"warning: unknown account type {account_type}")
                     continue
                 
                 self.__accounts[account.get_account_number()] = account
                 customer.add_account(account)
             
-            
             return True
         except Exception as e:
             print(f"load failed: {e}")
-            
             traceback.print_exc()
             return False
-
-
-def validate_choice(prompt: str, valid_choices: list, error_msg: str = "Invalid choice.  try again."):
-
-    while True:
-        choice = input(prompt).strip()
-        if choice in valid_choices:
-            return choice
-        print(f"error: {error_msg}")
-
-
-def validate_email(prompt: str = "Email: "):
-    
-    while True:
-        email = input(prompt).strip()
-        if not email:
-            print("error: Email cannot be empty.  try again.")
-            continue
-        if '@' in email and '.' in email.split('@')[1] and len(email.split('@')[0]) > 0:
-            return email
-        print("error: Invalid email format.  enter a valid email (e.g., user@example.com)")
-
-
-def validate_phone(prompt: str = "Phone: "):
-    while True:
-        phone = input(prompt).strip()
-        if not phone:
-            print("error: Phone number cannot be empty.  try again.")
-            continue
-        clean_phone = phone.replace('+', '').replace('-', '').replace(' ', '').replace('(', '').replace(')', '')
-        if clean_phone.isdigit() and len(clean_phone) >= 7:
-            return phone
-        print("error: Invalid phone number.  enter a valid phone number (at least 7 digits)")
-
-
-def validate_date(prompt: str = "Date (YYYY-MM-DD): "):
-    while True:
-        date_str = input(prompt).strip()
-        if not date_str:
-            print("error: Date cannot be empty.  try again.")
-            continue
-        try:
-            datetime.strptime(date_str, "%Y-%m-%d")
-            return date_str
-        except ValueError:
-            print("error: Invalid date format.  use YYYY-MM-DD format (e.g., 1990-01-15)")
-
-
-def validate_not_empty(prompt: str, field_name: str = "This field"):
-    
-    while True:
-        value = input(prompt).strip()
-        if value:
-            return value
-        print(f"error: {field_name} cannot be empty.  try again.")
-
-
-def validate_amount(prompt: str = "Amount: "):
-    
-    while True:
-        try:
-            amount_str = input(prompt).strip()
-            if not amount_str:
-                print("error: Amount cannot be empty.  try again.")
-                continue
-            amount = float(amount_str)
-            if amount > 0:
-                return amount
-            print("error: Amount must be greater than 0.  try again.")
-        except ValueError:
-            print("error: Invalid amount.  enter a valid number.")
-
 
 def main():
     bank = BankingSystem()
     bank.load_data()
     print("\n\n")
-    print("Welcome to Farabi bank. You can choose any of options below to use our services. Thank you 😊\n\n")
+    print("welcome to farabi bank. you can choose any of options below to use our services \n\n")
     print("="*77)
+    
     while True:
         print("\n\n")
-        print("Choose any one of them to use")
+        print("choose any one of them to use")
         print("="*77)
-        print("[1] Create Customer  [2] Create Account  [3] Deposit  [4] Withdraw  [5] Transfer  [6] View Customer Data  [7] View Account  [8] Exit")
+        print("[1] create customer  [2] create account  [3] deposit  [4] withdraw  [5] transfer  [6] view customer data  [7] view account  [8] exit\n\n")
         
         try:
-            choice = input("Select: ").strip()
+            choice = input("select: ")
             
             if choice == "1":
-                print("\n[1] Individual  [2] Corporate")
-                ctype = validate_choice("Type: ", ["1", "2"], " enter 1 for Individual or 2 for Corporate")
+                print("\n[1] individual  [2] corporate")
+                ctype = Validator.validate_choice("type: ", ["1", "2"], "enter 1 for individual or 2 for corporate")
                 
-                name = validate_not_empty("Name: ", "Name")
-                email = validate_email()
-                phone = validate_phone()
-                address = validate_not_empty("Address: ", "Address")
+                name = Validator.validate_not_empty("name: ", "name")
+                email = Validator.validate_email()
+                phone = Validator.validate_phone()
+                address = Validator.validate_not_empty("address: ", "address")
                 cust_id = bank.generate_customer_id(name)
                 
                 if ctype == "1":
-                    dob = validate_date("Date of birth (YYYY-MM-DD): ")
+                    dob = Validator.validate_date("date of birth (yyyy-mm-dd): ")
                     customer = IndividualCustomer(cust_id, name, email, phone, address, dob)
                 else:
-                    company = validate_not_empty("Company name: ", "Company name")
-                    tax_id = validate_not_empty("Tax ID: ", "Tax ID")
+                    company = Validator.validate_not_empty("company name: ", "company name")
+                    tax_id = Validator.validate_not_empty("tax id: ", "tax id")
                     customer = CorporateCustomer(cust_id, name, email, phone, address, company, tax_id)
                 
                 bank.add_customer(customer)
-                print(f"Customer created: {cust_id}")
+                print(f"customer created: {cust_id}")
                 bank.save_data(silent=True) 
             
             elif choice == "2":
-                cust_id = validate_not_empty("Customer ID: ", "Customer ID")
+                cust_id = Validator.validate_not_empty("customer id: ", "customer id")
                 customer = bank.find_customer(cust_id)
                 if not customer:
-                    print("error: Customer not found")
+                    print("error: customer not found")
                     continue
                 
-                print("[1] Savings  [2] Checking  [3] Loan")
-                atype = validate_choice("Type: ", ["1", "2", "3"], " enter 1 for Savings, 2 for Checking, or 3 for Loan")
+                print("[1] savings  [2] checking  [3] loan")
+                atype = Validator.validate_choice("type: ", ["1", "2", "3"], "enter 1 for savings, 2 for checking, or 3 for loan")
                 
                 if atype == "1":
                     bank.create_account(customer, "savings")
@@ -824,13 +773,13 @@ def main():
                 bank.save_data(silent=True)
             
             elif choice == "3":
-                acc_num = validate_not_empty("Account number: ", "Account number")
+                acc_num = Validator.validate_not_empty("account number: ", "account number")
                 account = bank.find_account(acc_num)
                 if not account:
-                    print("error: Account not found")
+                    print("error: account not found")
                     continue
                 
-                amount = validate_amount()
+                amount = Validator.validate_amount()
                 txn_id = bank.generate_transaction_id()
                 txn = DepositTransaction(txn_id, account, amount)
                 txn.execute()
@@ -838,13 +787,13 @@ def main():
                 bank.save_data(silent=True) 
             
             elif choice == "4":
-                acc_num = validate_not_empty("Account number: ", "Account number")
+                acc_num = Validator.validate_not_empty("account number: ", "account number")
                 account = bank.find_account(acc_num)
                 if not account:
-                    print("error: Account not found")
+                    print("error: account not found")
                     continue
                 
-                amount = validate_amount()
+                amount = Validator.validate_amount()
                 txn_id = bank.generate_transaction_id()
                 txn = WithdrawalTransaction(txn_id, account, amount)
                 txn.execute()
@@ -852,16 +801,16 @@ def main():
                 bank.save_data(silent=True) 
             
             elif choice == "5":
-                from_acc = validate_not_empty("From account: ", "From account")
-                to_acc = validate_not_empty("To account: ", "To account")
+                from_acc = Validator.validate_not_empty("from account: ", "from account")
+                to_acc = Validator.validate_not_empty("to account: ", "to account")
                 source = bank.find_account(from_acc)
                 dest = bank.find_account(to_acc)
                 
                 if not source or not dest:
-                    print("error: Account(s) not found")
+                    print("error: account(s) not found")
                     continue
                 
-                amount = validate_amount()
+                amount = Validator.validate_amount()
                 txn_id = bank.generate_transaction_id()
                 txn = TransferTransaction(txn_id, source, dest, amount)
                 txn.execute()
@@ -869,33 +818,32 @@ def main():
                 bank.save_data(silent=True) 
             
             elif choice == "6":
-                cust_id = validate_not_empty("Customer ID: ", "Customer ID")
+                cust_id = Validator.validate_not_empty("customer id: ", "customer id")
                 customer = bank.find_customer(cust_id)
                 if customer:
                     customer.get_info()
                 else:
-                    print("error: Not found")
+                    print("error: not found")
             
             elif choice == "7":
-                acc_num = validate_not_empty("Account number: ", "Account number")
+                acc_num = Validator.validate_not_empty("account number: ", "account number")
                 account = bank.find_account(acc_num)
                 if account:
                     account.view_balance()
                 else:
-                    print("error: Not found")
-            
+                    print("error: not found")
             
             elif choice == "8":
                 bank.save_data()
-                print("\nThank you for using our services. We can't wait to see you next time! Have a nice day!")
+                print("\nthank you for using our services. have a nice day!")
                 break
             
             else:
-                print("Invalid choice")
+                print("invalid choice")
         
         except Exception as e:
-            print(f"error:{e}")
-
+            print(f"error: {e}")
+            traceback.print_exc()
 
 if __name__ == "__main__":
     main()
